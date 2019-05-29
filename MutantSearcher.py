@@ -30,19 +30,9 @@ def process_mutants(mutant_library_file):
         for index, row in df_unprocessed.iterrows():
             num_mutant_processed += 1
 
-<<<<<<< HEAD
             # Filter N/A CDS strand
             if (row["CDS strand"] != "N/A"):
                 locus_tags = get_locus_tags(row)
-=======
-            # Filter N/A CDS strand and strands with already seen Locus tag
-            if (row["CDS strand"] != "N/A" and row["Old Locus Tag"] not in prev_row):
-                # Increase number of columns for mutants with operons
-                new_columns = columns
-                for j in range(len(row) - len(columns)):
-                    new_columns.append(j)
-                new_df = pd.DataFrame(columns=new_columns)
->>>>>>> 6068676902389ceb29312c38db502ddccb9d35b4
 
                 #  Filter strands with already seen locus tag
                 if (locus_tags not in prev_row):
@@ -52,7 +42,6 @@ def process_mutants(mutant_library_file):
                         new_columns.append(j)
                     new_df = pd.DataFrame(columns=new_columns)
 
-<<<<<<< HEAD
                     # Copy mutant data into new data frame
                     for k in range(len(row)):
                         df_index = new_df.columns[k]
@@ -61,10 +50,6 @@ def process_mutants(mutant_library_file):
 
                     # Remember previous row to reduce redundancies
                     prev_row.add(locus_tags)
-=======
-                # Remember previous row to reduce redundancies
-                prev_row.add(row["Old Locus Tag"])
->>>>>>> 6068676902389ceb29312c38db502ddccb9d35b4
 
             sys.stdout.write("Processed %d mutants \r" % (num_mutant_processed))
             sys.stdout.flush()

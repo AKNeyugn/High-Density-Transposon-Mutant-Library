@@ -33,7 +33,7 @@ def process_mutants(mutant_library_file):
             locus_tags = get_locus_tags(row)
 
             # Filter N/A CDS strand and strands with already seen Locus tag
-            if (row["CDS strand"] != "N/A" and locus_tags not in prev_row):
+            if (row["CDS strand"] != "N/A" and row["Old Locus Tag"] not in prev_row):
                 # Increase number of columns for mutants with operons
                 new_columns = columns
                 for j in range(len(row) - len(columns)):
@@ -47,7 +47,7 @@ def process_mutants(mutant_library_file):
                 df_processed = df_processed.append(new_df, sort=False)
 
                 # Remember previous row to reduce redundancies
-                prev_row.add(locus_tags)
+                prev_row.add(row["Old Locus Tag"])
 
             sys.stdout.write("Processed %d mutants \r" % (num_mutant_processed))
             sys.stdout.flush()

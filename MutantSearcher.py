@@ -12,13 +12,12 @@ pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
 def process_mutants(mutant_library_file):
     '''
-    Filter mutant library for unique gene annotations (unique locus tags,
+    Filter mutant library for unique gene annotations (unique old locus tags,
     and ignoring reference, position, read count) into a new Excel file
 
     Args:
         mutant_library_file (string): File name of HDTM library
     '''
-    #TODO: consider mutants with operons
     sys.stdout.write("Processing mutant library... \n")
     with pd.ExcelFile(mutant_library_file) as xls:
         df_unprocessed = pd.read_excel(xls, sheet_name=0, keep_default_na=False, na_values=[""])
@@ -30,24 +29,27 @@ def process_mutants(mutant_library_file):
 
         for index, row in df_unprocessed.iterrows():
             num_mutant_processed += 1
-            locus_tags = get_locus_tags(row)
 
-            # Filter N/A CDS strand and strands with already seen Locus tag
-            if (row["CDS strand"] != "N/A" and locus_tags not in prev_row):
-                # Increase number of columns for mutants with operons
-                new_columns = columns
-                for j in range(len(row) - len(columns)):
-                    new_columns.append(j)
-                new_df = pd.DataFrame(columns=new_columns)
+            # Filter N/A CDS strand
+            if (row["CDS strand"] != "N/A"):
+                locus_tags = get_locus_tags(row)
 
-                # Copy mutant data into new data frame
-                for k in range(len(row)):
-                    df_index = new_df.columns[k]
-                    new_df.at[0, df_index] = row[k]
-                df_processed = df_processed.append(new_df, sort=False)
+                #  Filter strands with already seen locus tag
+                if (locus_tags not in prev_row):
+                    # Increase number of columns for mutants with operons
+                    new_columns = columns
+                    for j in range(len(row) - len(columns)):
+                        new_columns.append(j)
+                    new_df = pd.DataFrame(columns=new_columns)
 
-                # Remember previous row to reduce redundancies
-                prev_row.add(locus_tags)
+                    # Copy mutant data into new data frame
+                    for k in range(len(row)):
+                        df_index = new_df.columns[k]
+                        new_df.at[0, df_index] = row[k]
+                    df_processed = df_processed.append(new_df, sort=False)
+
+                    # Remember previous row to reduce redundancies
+                    prev_row.add(locus_tags)
 
             sys.stdout.write("Processed %d mutants \r" % (num_mutant_processed))
             sys.stdout.flush()
@@ -68,7 +70,7 @@ def cleanup():
 
 def get_locus_tags(row):
     '''
-    Extract all locus tags in mutant
+    Extract all old locus tags (eg. BCALxxxx) in mutant
 
     Args:
         row (Series): Excel row corresponding to mutant
@@ -77,6 +79,10 @@ def get_locus_tags(row):
         (tuple): list of locus tags in mutant 
     '''
     list_locus_tags = []
+
+    for i in range(len(row)):
+        if (row[i] != "" and "BCAL" in str(row[i])):
+            list_locus_tags.append(row[i])
 
     return tuple(list_locus_tags)
 

@@ -1,5 +1,6 @@
 import sys
 import os
+import datetime
 import pandas as pd
 
 
@@ -12,6 +13,7 @@ locus_tag_identifier = ["BCA", "pBCA", "QU43"]
 pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
 def main(argv=None):
+    start = datetime.datetime.now()
     mutant_library_file = sys.argv[1]
     gene_library_file = sys.argv[2]
     output_excel = False
@@ -20,9 +22,11 @@ def main(argv=None):
 
     processed_data = process_mutants(mutant_library_file, output_excel)
     search_mutants(gene_library_file, processed_data)
-    #cleanup()
 
-    sys.stdout.write("Script finished!")
+    end = datetime.datetime.now()
+    time_taken = end - start
+    sys.stdout.write("Time taken: " + str(time_taken.total_seconds() / 60) + " minutes. \n")
+    sys.stdout.write("Script finished! \n")
     return
 
 
@@ -85,11 +89,6 @@ def search_mutants(gene_library_file, processed_data):
         
     sys.stdout.write("Finished searching for mutants! \n")
     sys.stdout.write("\n")
-    return
-
-def cleanup():
-    '''
-    '''
     return
 
 

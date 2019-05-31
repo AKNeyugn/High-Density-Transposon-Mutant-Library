@@ -1,8 +1,6 @@
 import sys
-import os
 import collections
 import datetime
-import numpy as np
 import pandas as pd
 
 
@@ -205,10 +203,11 @@ def create_chart(writer, data, essential):
         sheet_name = "Non_Essential_Genes_Numbers"
         chart_name = "Frequency of # non-essential gene mutants recovered"
     worksheet = writer.sheets[sheet_name]
-    chart = workbook.add_chart({"type": "column"})
     data_range = sum(str(ele) != "nan" for ele in data[data.columns[4]].values)
-    chart_cat = "=" + sheet_name+ "!$D$2:$D$" + str(data_range + 1)
-    chart_val = "=" + sheet_name+ "!$E$2:$E$" + str(data_range + 1)
+    chart_cat = "=" + sheet_name + "!$D$2:$D$" + str(data_range + 1)
+    chart_val = "=" + sheet_name + "!$E$2:$E$" + str(data_range + 1)
+
+    chart = workbook.add_chart({"type": "column"})
     chart.add_series({
         "categories": chart_cat,
         "values": chart_val

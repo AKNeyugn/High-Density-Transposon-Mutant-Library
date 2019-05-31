@@ -7,7 +7,7 @@ Script expected runtime: ~5 minutes
 Module requirements:
 - pandas (pip install pandas)
 - xlrd (pip install xlrd)
-- openpyxl (pip install openpyxl)
+- xlsxwriter (pip install xlsxwriter)
 
 How to run:
 - Windows: python MutantSearcher.py mutant_library reference_library processed_library

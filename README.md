@@ -1,6 +1,8 @@
 # High-Density-Transposon-Mutant-Library
 
-Script to process large mutant library data file by removing redundancies and to search, for each B. cenocepacia K56-2 essential genes, mutants presenting the gene. 
+Script to process large mutant library data file by removing redundancies and to search, for each B. cenocepacia K56-2 essential/non-essential genes, mutants presenting the gene. 
+
+Script expected runtime: ~5 minutes
 
 Module requirements:
 - pandas (pip install pandas)
@@ -8,9 +10,9 @@ Module requirements:
 - openpyxl (pip install openpyxl)
 
 How to run:
-- Windows: python MutantSearcher.py arg1 arg2 arg3
-- Linux (lab computer): sudo python3 MutantSearcher.py arg1 arg2 arg3
+- Windows: python MutantSearcher.py mutant_library reference_library processed_library
+- Linux (lab computer): sudo python3 MutantSearcher.py mutant_library reference_library processed_library
 
-  - arg1: mutant library Excel file
-  - arg2: reference essential genes library Excel file
-  - arg3: (Optional) "true" if want to output processed mutant library Excel file
+  - mutant_library: mutant library Excel file
+  - reference_library: reference essential genes library Excel file
+  - processed_library: (Optional) "true" if want to output processed mutant library Excel file

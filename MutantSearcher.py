@@ -14,6 +14,7 @@ pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
 def main(argv=None):
     start = datetime.datetime.now()
+    sys.stdout.write("Start time: " + str(start) + "\n")
     mutant_library_file = sys.argv[1]
     gene_library_file = sys.argv[2]
     output_excel = False

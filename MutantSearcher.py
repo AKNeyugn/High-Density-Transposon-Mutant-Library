@@ -27,7 +27,6 @@ def main(argv=None):
 
     end = datetime.datetime.now()
     time_taken = end - start
-    #time_taken_str = time_take.seconds() // 60
     sys.stdout.write("Time taken: " + str(time_taken.seconds // 60) + " minutes " 
                     + str(time_taken.seconds % 60) + " seconds. \n")
     sys.stdout.write("Script finished! \n")
@@ -76,8 +75,8 @@ def search_mutants(gene_library_file, processed_data):
         with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
             df_gene = pd.read_excel(gene_xls, sheet_name=0, keep_default_na=False, na_values=[""])
             df_mutant = processed_data
-            columns = pd.Index(["J2315 locus tag"])
-            columns = columns.append(df_mutant.columns)
+            columns_mutants = pd.Index(["J2315 locus tag"])
+            columns_mutants = columns_mutants.append(df_mutant.columns)
             essentials_list = df_gene.iloc[2:510,12]
             essentials_dict = {gene: [] for gene in essentials_list}
             non_essentials_list = [ele for ele in df_gene.iloc[2:6362,43] if str(ele) != "nan"]
@@ -97,16 +96,19 @@ def search_mutants(gene_library_file, processed_data):
             
             sys.stdout.write("Writing to Excel... \n")
             sys.stdout.write("Processing essential genes... \n")
-            df_essentials_1 = create_df_mutants(essentials_dict, essentials_list, columns)
-            df_essentials_2 = create_df_numbers(essentials_dict, ["J2315 locus tag", "# mutants recovered"])
-            df_essentials_1.to_excel(writer, sheet_name="Essential_Genes_Mutants", index=False)
-            df_essentials_2.to_excel(writer, sheet_name="Essential_Genes_Numbers", index=False)
+            essentials_mutants = create_df_mutants(essentials_dict, essentials_list, columns_mutants)
+            essentials_numbers = create_df_numbers(essentials_dict)
+            essentials_mutants.to_excel(writer, sheet_name="Essential_Genes_Mutants", index=False)
+            essentials_numbers.to_excel(writer, sheet_name="Essential_Genes_Numbers", index=False)
+            create_chart(writer, essentials_numbers, True)
+
             sys.stdout.write("Processing non-essential genes... \n")
-            df_non_essentials_1 = create_df_mutants(non_essentials_dict, non_essentials_list, columns)
-            df_non_essentials_2 = create_df_numbers(non_essentials_dict, ["J2315 locus tag", "# mutants recovered"])
-            df_non_essentials_1.to_excel(writer, sheet_name="Non_Essential_Genes_Mutants", index=False  )
-            df_non_essentials_2.to_excel(writer, sheet_name="Non_Essential_Genes_Numbers", index=False)
-        
+            non_essentials_mutants = create_df_mutants(non_essentials_dict, non_essentials_list, columns_mutants)
+            non_essentials_numbers = create_df_numbers(non_essentials_dict)
+            non_essentials_mutants.to_excel(writer, sheet_name="Non_Essential_Genes_Mutants", index=False)
+            non_essentials_numbers.to_excel(writer, sheet_name="Non_Essential_Genes_Numbers", index=False)
+            create_chart(writer, non_essentials_numbers, False)
+            
     sys.stdout.write("Finished searching for mutants! \n")
     sys.stdout.write("\n")
     return
@@ -154,7 +156,7 @@ def create_df_mutants(data, order, columns):
 
     return output
 
-def create_df_numbers(data, columns):
+def create_df_numbers(data):
     '''
     Create gene-# mutants DataFrame to be written in Excel
 
@@ -165,14 +167,58 @@ def create_df_numbers(data, columns):
     Return:
         (DataFrame): gene-# mutants DataFrame
     '''
+    df_columns = ["J2315 locus tag", "# mutants recovered"]
+    chart_df_columns = df_columns + ["", "# mutants recovered", "Frequency"]
     sorted_data = sorted(data, key=lambda k: len(data[k]), reverse=True)
     sorted_data_full = []
     for gene in sorted_data:
         sorted_data_full.append((gene, len(data[gene])))
 
-    output = pd.DataFrame(sorted_data_full, columns=columns)
+    output = pd.DataFrame(sorted_data_full, columns=df_columns)
+
+    mutant_counter = collections.Counter(output[df_columns[1]])
+    chart_data = []
+    for i in range(max(mutant_counter.elements())+1):
+        chart_data.append((i, mutant_counter[i]))
+    output_chart_data = pd.DataFrame(chart_data)
+
+    output = pd.concat([output, pd.DataFrame([""]), output_chart_data], axis=1)
+    output.columns = chart_df_columns
 
     return output
+
+def create_chart(writer, data, essential):
+    '''
+    Output histogram describing frequency of # mutants recovered 
+    into Excel file
+
+    Args:
+        writer (ExcelWriter): writer for output Excel file
+        data (DataFrame): gene-# mutant DataFrame
+        essential (bool): True if essential genes DataFrame
+    '''
+    workbook = writer.book
+    if essential:
+        sheet_name = "Essential_Genes_Numbers"
+        chart_name = "Frequency of # essential gene mutants recovered"
+    else:
+        sheet_name = "Non_Essential_Genes_Numbers"
+        chart_name = "Frequency of # non-essential gene mutants recovered"
+    worksheet = writer.sheets[sheet_name]
+    chart = workbook.add_chart({"type": "column"})
+    data_range = sum(str(ele) != "nan" for ele in data[data.columns[4]].values)
+    chart_cat = "=" + sheet_name+ "!$D$2:$D$" + str(data_range + 1)
+    chart_val = "=" + sheet_name+ "!$E$2:$E$" + str(data_range + 1)
+    chart.add_series({
+        "categories": chart_cat,
+        "values": chart_val
+    })
+    chart.set_legend({"none": True})
+    chart.set_title({"name": chart_name})
+    chart.set_x_axis({"name": data.columns[3]})
+    chart.set_y_axis({"name": data.columns[4]})
+    worksheet.insert_chart("G2", chart)
+    return
 
 
 if __name__ == "__main__":

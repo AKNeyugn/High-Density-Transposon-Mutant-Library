@@ -1,3 +1,11 @@
+""" Script to process large mutant library data file by removing redundancies 
+    and to search, for each B. cenocepacia K56-2 essential/non-essential genes, 
+    mutants presenting the gene.
+
+    Author: Roy Nguyen
+    Last edited: June 4, 2019
+"""
+
 import sys
 import collections
 import datetime

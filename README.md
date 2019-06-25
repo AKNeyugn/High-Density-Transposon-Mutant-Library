@@ -2,8 +2,6 @@
 
 Script to process large mutant library data file by removing redundancies and to search, for each B. cenocepacia K56-2 essential/non-essential genes, mutants presenting the gene. 
 
-Script expected runtime: ~5 minutes
-
 Module requirements:
 - pandas (pip install pandas)
 - xlrd (pip install xlrd)

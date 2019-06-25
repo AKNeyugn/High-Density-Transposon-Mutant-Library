@@ -15,7 +15,7 @@ How to run:
 
   - mutant_library: mutant library Excel file
   - reference_library: reference essential genes library Excel file
-  - processed_library: (Optional) add "true" to the end of the command if want to output processed mutant library Excel file (only unique mutants, remove duplicate mutants)
+  - processed_library: (Optional) add "true" to the end of the command if want to output processed mutant library csv file (only unique mutants, remove duplicate mutants)
 
 Note: output excel (EssentialGenesMutants.xlsx) will contain 4 sheets; unique essential mutants; Essential mutants summary stats; then two sheets same as before but for non-essential mutants
 

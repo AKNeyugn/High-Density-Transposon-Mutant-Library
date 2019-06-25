@@ -1,9 +1,11 @@
+#!/usr/bin/env python
+
 """ Script to process large mutant library data file by removing redundancies 
     and to search, for each B. cenocepacia K56-2 essential/non-essential genes, 
     mutants presenting the gene.
 
     Author: Roy Nguyen
-    Last edited: June 4, 2019
+    Last edited: June 25, 2019
 """
 
 import sys
@@ -12,7 +14,7 @@ import datetime
 import pandas as pd
 
 
-processed_mutant_library = "ProcessedMutantLibrary.xlsx"
+processed_mutant_library = "ProcessedMutantLibrary.csv"
 output = "EssentialGenesMutants.xlsx"
 tags_to_remove = ["reference", "position", "count"]
 locus_tag_identifier = ["BCA", "QU43"]
@@ -23,13 +25,15 @@ pd.set_option('display.float_format', lambda x: '%.3f' % x)
 def main(argv=None):
     start = datetime.datetime.now()
     sys.stdout.write("Start time: " + str(start) + "\n")
+
     mutant_library_file = sys.argv[1]
     gene_library_file = sys.argv[2]
-    output_excel = False
+    output_csv = False
     if (len(sys.argv) == 4 and sys.argv[3].lower() == "true"):
-        output_excel = sys.argv[3]
+        output_csv = sys.argv[3]
 
-    processed_data = process_mutants(mutant_library_file, output_excel)
+    input_type = is_excel(mutant_library_file)
+    processed_data = process_mutants(mutant_library_file, output_csv, input_type)
     search_mutants(gene_library_file, processed_data)
 
     end = datetime.datetime.now()
@@ -40,32 +44,38 @@ def main(argv=None):
     return
 
 
-def process_mutants(mutant_library_file, output_excel):
+def process_mutants(mutant_library_file, output_csv, input_type):
     '''
     Filter mutant library for unique gene annotations (ignoring reference,
-    position, read count) into a new Excel file (optional) and return the processed
+    position, read count) into a new csv file (optional) and return the processed
     dataframe
 
     Args:
         mutant_library_file (string): File name of HDTM library
-        output_excel (boolean): Whether filtered data is written into an Excel file
+        output_csv (boolean): Whether filtered data is written into a .csv file
+        input_type (boolean): True if input file is Excel, False if input is .csv
     
     Return:
         (DataFrame): filtered mutant library
     '''
     sys.stdout.write("Processing mutant library... \n")
-    with pd.ExcelFile(mutant_library_file) as xls:
-        df_unprocessed = pd.read_excel(xls, sheet_name=0, keep_default_na=False, na_values=[""])
-        df_unprocessed.drop(tags_to_remove, axis=1, inplace=True)
-        df_processed = df_unprocessed.drop_duplicates(keep="first")
+    if input_type:
+        with pd.ExcelFile(mutant_library_file) as xls:
+            df_unprocessed = pd.read_excel(xls, sheet_name=0, keep_default_na=False, na_values=[""])
+    else:
+        df_unprocessed = pd.read_csv(mutant_library_file, keep_default_na=False, na_values=[""])
 
-        if (output_excel):
-            sys.stdout.write("Writing to Excel... \n")
-            df_processed.to_excel(processed_mutant_library, index=False)
+    df_unprocessed.drop(tags_to_remove, axis=1, inplace=True)
+    df_processed = df_unprocessed.drop_duplicates(keep="first")
+    if (output_csv):
+        sys.stdout.write("Writing to csv... \n")
+        df_processed.to_csv(processed_mutant_library, index=False)
 
     sys.stdout.write("Finished processing mutants! \n")
     sys.stdout.write("\n")
     return df_processed
+
+    
 
 def search_mutants(gene_library_file, processed_data):
     '''
@@ -73,7 +83,7 @@ def search_mutants(gene_library_file, processed_data):
     the tag and output results into a new Excel file
 
     Args:
-        gene_library_file (string): File name of reference essential genes
+        gene_library_file (string): file name of reference essential genes
                         library
         processed_data (DataFrame): filtered mutant library
     '''
@@ -119,6 +129,22 @@ def search_mutants(gene_library_file, processed_data):
     sys.stdout.write("Finished searching for mutants! \n")
     sys.stdout.write("\n")
     return
+
+
+def is_excel(file_name):
+    '''
+    Return True if file is Excel, False otherwise (if .csv)
+
+    Args:
+        file_name (string): name of file
+
+    Return:
+        (boolean): whether file is Excel or .csv
+    '''
+    if "xls" in file_name:
+        return True
+    else:
+        return False
 
 
 def get_locus_tags(row):

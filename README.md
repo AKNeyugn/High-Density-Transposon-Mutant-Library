@@ -8,8 +8,8 @@ Module requirements:
 - xlsxwriter (pip install xlsxwriter)
 
 How to run:
-- Windows: python MutantSearcher.py mutant_library reference_library processed_library
-- Linux (lab computer): python3 MutantSearcher.py mutant_library reference_library processed_library
+- Windows: *python MutantSearcher.py mutant_library reference_library processed_library*
+- Linux (lab computer): *python3 MutantSearcher.py mutant_library reference_library processed_library*
 
   - mutant_library: mutant library Excel file
   - reference_library: reference essential genes library Excel file
